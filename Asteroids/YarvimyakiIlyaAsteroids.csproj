@@ -8,9 +8,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>YarvimyakiIlyaAsteroids</RootNamespace>
     <AssemblyName>YarvimyakiIlyaAsteroids</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,9 +36,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Asteroid\Asteroid.cs" />
     <Compile Include="BaseObject.cs" />
+    <Compile Include="SpaceShip\Bullet.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="ICollision.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="SpaceShip\SpaceShip.cs" />
     <Compile Include="Star.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -46,7 +51,16 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="NyanCat.JPG">
+    <Content Include="Asteroid\Asteroid.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Asteroid\Bang.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Asteroid\BonusStar.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SpaceShip\Spaceship.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
