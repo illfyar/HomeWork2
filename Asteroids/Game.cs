@@ -28,11 +28,14 @@ namespace YarvimyakiIlyaAsteroids
         {
             form.KeyDown += MoveSpaceShip;
             form.KeyUp += StopSpaceShip;
+            form.SizeChanged += Form_SizeChanged;
+            form.MaximizeBox = false;
+            form.MinimizeBox = false;            
             // Графическое устройство для вывода графики            
             Graphics g;
-            
+
             // Предоставляет доступ к главному буферу графического контекста для текущего приложения
-            _context = BufferedGraphicsManager.Current;            
+            _context = BufferedGraphicsManager.Current;
             g = form.CreateGraphics();
             // Создаем объект (поверхность рисования) и связываем его с формой
             // Запоминаем размеры формы
@@ -45,6 +48,31 @@ namespace YarvimyakiIlyaAsteroids
             timer.Start();
             timer.Tick += Timer_Tick;
         }
+
+        private static void Form_SizeChanged(object sender, EventArgs e)
+        {
+            try
+            {
+				if (((System.Windows.Forms.Form)sender).Size.Width > 1000
+					|| ((System.Windows.Forms.Form)sender).Size.Width < 0
+			    	|| ((System.Windows.Forms.Form)sender).Size.Height > 1000
+	                || ((System.Windows.Forms.Form)sender).Size.Height < 0)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                DialogResult dialogResult = MessageBox.Show("Размер формы больше положенной", "", MessageBoxButtons.OK);
+                if (dialogResult == DialogResult.OK)
+                {
+                    Size size = new Size(800, 600);
+                    ((System.Windows.Forms.Form)sender).Size = size;                    
+                }
+            }
+
+        }
+
         /// <summary>
         /// Вывод всех объектов
         /// </summary>
@@ -66,14 +94,26 @@ namespace YarvimyakiIlyaAsteroids
             asteroids = new BaseObject[10];
             stars = new BaseObject[20];
             for (int i = 0; i < asteroids.Length; i++)
-            {                
-                asteroids[i] = new Asteroid(new Point(rand.Next(0, 600), rand.Next(0, 600)), new Point(15 - i, 15 - i),
-                    new Size(30, 30),i%5 == 0 ? eTypeAsteroid.BonusStar : eTypeAsteroid.Asteroid);
+            {
+                asteroids[i] = new Asteroid(new Point(rand.Next(0, 600), rand.Next(0, 600)), new Point(rand.Next(5, 15), 0),
+                    new Size(30, 30), i % 5 == 0 ? eTypeAsteroid.BonusStar : eTypeAsteroid.Asteroid);
             }
             for (int i = 0; i < stars.Length; i++)
             {
-                stars[i] = new Star(new Point(rand.Next(0, 600), rand.Next(0, 600)), new Point(i, 0), new Size(rand.Next(1, 3), rand.Next(1, 3)));
+                stars[i] = new Star(new Point(rand.Next(0, 600), rand.Next(0, 600)), new Point(i, 0), new Size(rand.Next(1, 4), rand.Next(1, 4)));
             }
+            try
+            {
+                asteroids[9] = new Asteroid(new Point(rand.Next(0, 600), rand.Next(0, 600)), new Point(rand.Next(5, 15), 0),
+                    new Size(-2, 30), eTypeAsteroid.Asteroid);
+            }
+            catch (GameObjectException ex)
+            {
+                DialogResult dialogResult = MessageBox.Show(ex.Message, "", MessageBoxButtons.OK);
+                asteroids[9] = new Asteroid(new Point(rand.Next(0, 600), rand.Next(0, 600)), new Point(rand.Next(5, 15), 0),
+                    new Size(30, 30), eTypeAsteroid.Asteroid);
+            }
+
             spaceShip = new SpaceShip();
         }
         /// <summary>
@@ -92,7 +132,7 @@ namespace YarvimyakiIlyaAsteroids
             foreach (BaseObject star in stars)
                 star.Update();
             spaceShip.Update();
-            
+
         }
         /// <summary>
         /// Обработчик события формы KeyDown, вызывает метод класса 
@@ -112,7 +152,7 @@ namespace YarvimyakiIlyaAsteroids
         /// <param name="e"></param>
         private static void StopSpaceShip(object sender, KeyEventArgs e)
         {
-            spaceShip.MoveStopSpaceShip(e.KeyCode,false);
+            spaceShip.MoveStopSpaceShip(e.KeyCode, false);
         }
         private static void Timer_Tick(object sender, EventArgs e)
         {

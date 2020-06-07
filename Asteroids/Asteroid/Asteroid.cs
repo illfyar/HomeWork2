@@ -37,6 +37,7 @@ namespace YarvimyakiIlyaAsteroids
         public Asteroid(Point pos, Point dir, Size size,eTypeAsteroid typeAsteroid) : base(pos, dir, size)
         {
             TypeAsteroid = typeAsteroid;
+            ChekBaseObject();
         }
         public Asteroid(Point pos, Point dir, Size size) : base(pos, dir, size)
         {
@@ -47,7 +48,8 @@ namespace YarvimyakiIlyaAsteroids
         /// </summary>
         public override void Draw()
         {
-            Game.Buffer.Graphics.DrawImage(currentImage, Pos.X, Pos.Y, Size.Width, Size.Height);            
+            Game.Buffer.Graphics.DrawImage(currentImage, Pos.X, Pos.Y, Size.Width, Size.Height);
+            ChekBaseObject();
         }
         /// <summary>
         /// Изменение свойст астеройда
