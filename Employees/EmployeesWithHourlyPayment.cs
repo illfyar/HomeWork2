@@ -8,10 +8,9 @@ namespace Employees
 {
     class EmployeesWithHourlyPayment : Employees
     {
-        public EmployeesWithHourlyPayment(int personnelNumber, int salary) : base(personnelNumber, salary)
+        public EmployeesWithHourlyPayment(int personnelNumber) : base(personnelNumber)
         {
         }
-
         public override void CalculateSalary(decimal rate)
         {
             Salary = (decimal) 20.8 * 8 * rate;

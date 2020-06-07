@@ -8,9 +8,10 @@ namespace Employees
 {
     class EmployeesWithFixPayment : Employees
     {
-        public EmployeesWithFixPayment(int personnelNumber, int salary) : base(personnelNumber, salary)
+        public EmployeesWithFixPayment(int personnelNumber) : base(personnelNumber)
         {
         }
+
         public override void CalculateSalary(decimal rate)
         {
             Salary = rate;

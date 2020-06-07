@@ -15,11 +15,13 @@ namespace Employees
             Random random = new Random();
             for (int i = 0; i < employeesEnum.employees.Length/2; i++)
             {
-                employeesEnum.employees[i] = new EmployeesWithHourlyPayment(i, random.Next(15, 70));
+                employeesEnum.employees[i] = new EmployeesWithHourlyPayment(i);
+                employeesEnum.employees[i].CalculateSalary(random.Next(15, 70));
             }
             for (int i = employeesEnum.employees.Length / 2; i < employeesEnum.employees.Length; i++)
             {
-                employeesEnum.employees[i] = new EmployeesWithFixPayment(i, random.Next(3000, 12000));
+                employeesEnum.employees[i] = new EmployeesWithFixPayment(i);
+                employeesEnum.employees[i].CalculateSalary(random.Next(3000, 12000));
             }
             Array.Sort(employeesEnum.employees);
             foreach (Employees item in employeesEnum)

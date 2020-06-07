@@ -11,10 +11,9 @@ namespace Employees
         public int PersonnelNumber { get; set; }
         public decimal Salary { get; set; }
 
-        protected Employees(int personnelNumber, int salary)
+        protected Employees(int personnelNumber)
         {
-            PersonnelNumber = personnelNumber;            
-            Salary = salary;
+            PersonnelNumber = personnelNumber;                        
         }
         public abstract void CalculateSalary(decimal rate);
 
