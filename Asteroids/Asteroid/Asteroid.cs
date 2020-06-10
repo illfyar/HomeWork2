@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 namespace YarvimyakiIlyaAsteroids
 {
     enum eTypeAsteroid { Asteroid, BonusStar, Bang}
-    class Asteroid : BaseObject
+    class Asteroid : BaseObject, ICloneable, IComparable<Asteroid>
     {
+        //НР астеройда
+        public int Health { get; set; } = 3;
         //Рисунок атеройда по умолчанию
         private Image currentImage = Image.FromFile(@"Asteroid\Asteroid.png");
         //Соответствие типа астеройда его рисунку
@@ -19,6 +21,11 @@ namespace YarvimyakiIlyaAsteroids
           { eTypeAsteroid.Bang,Image.FromFile(@"Asteroid\Bang.png")}};
         //Тип астеройда
         private eTypeAsteroid typeAsteroid;
+        //очки награды
+        public LabelRewardPoints rewardPoints;
+        //событие срабатывает при уничтожении астеройда
+        public delegate void UpdateInfoRewardPoints(LabelRewardPoints rewardPoints);
+        public event UpdateInfoRewardPoints EventUpdateInfoRewardPoints;
         //При изменение типа астеройда меняется его рисунок по умолчанию
         public eTypeAsteroid TypeAsteroid
         {
@@ -28,6 +35,12 @@ namespace YarvimyakiIlyaAsteroids
             }
             set
             {
+                if (!(rewardPoints is null) && rewardPoints.lableShow)
+                {
+                    EventUpdateInfoRewardPoints?.Invoke(rewardPoints);
+                    rewardPoints.lableShow = false;
+                    rewardPoints.timeLife += 1;
+                }
                 if (typeAsteroidDict.TryGetValue(value, out currentImage))
                 {
                     typeAsteroid = value;
@@ -36,12 +49,17 @@ namespace YarvimyakiIlyaAsteroids
         }
         public Asteroid(Point pos, Point dir, Size size,eTypeAsteroid typeAsteroid) : base(pos, dir, size)
         {
-            TypeAsteroid = typeAsteroid;
             ChekBaseObject();
+            TypeAsteroid = typeAsteroid;
+            Health = 1;
+            rewardPoints = new LabelRewardPoints(pos);
+
         }
         public Asteroid(Point pos, Point dir, Size size) : base(pos, dir, size)
         {
             TypeAsteroid = eTypeAsteroid.Asteroid;
+            Health = 1;
+            rewardPoints = new LabelRewardPoints(pos);
         }
         /// <summary>
         /// Прорисовка астеройда
@@ -65,11 +83,47 @@ namespace YarvimyakiIlyaAsteroids
                 Pos.X = Game.Width;
                 Pos.Y = Game.rand.Next(0, 600);
                 Dir.X = Game.rand.Next(15, 30);
-                if (TypeAsteroid == eTypeAsteroid.Bang)
+                if (new Random().Next(1,100) < 5)
+                {
+                    TypeAsteroid = eTypeAsteroid.BonusStar;
+                }
+                else
                 {
                     TypeAsteroid = eTypeAsteroid.Asteroid;
+                    rewardPoints.ResetPoints();
                 }
             }
+            if (rewardPoints.timeLife > 0)
+            {
+                rewardPoints.timeLife += 1;
+            }
+            if (rewardPoints.timeLife > LabelRewardPoints.TIMELIFE)
+            {
+                rewardPoints.lableShow = false;
+                rewardPoints.timeLife = 0;
+                EventUpdateInfoRewardPoints(rewardPoints);
+            }
+        }
+        /// <summary>
+        /// Клонирование астеройда
+        /// </summary>
+        /// <returns></returns>
+        public object Clone()
+        {
+            return new Asteroid(Pos, Dir, Size, typeAsteroid) { Health = Health };
+        }
+        /// <summary>
+        /// метод для сравнения
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public int CompareTo(Asteroid other)
+        {
+            if (Health > other.Health)
+                return 1;
+            if (Health < other.Health)
+                return -1;
+            return 0;
         }
     }
 }

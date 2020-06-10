@@ -1,0 +1,2 @@
+﻿В классе Game в методе Update во вложенном методе CollisionWithAsteroid у параметра baseObject вызываю метод Collision. У класса SpaceShip 
+есть собственный метод Collision, но вызывается метод базового класса BaseObject, как вызвать метод производного класса SpaceShip?

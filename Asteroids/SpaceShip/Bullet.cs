@@ -9,18 +9,17 @@ namespace YarvimyakiIlyaAsteroids
 {
     class Bullet : BaseObject
     {
+        private Image imageBullet = Image.FromFile(@"SpaceShip\Bullet.png");
         public Bullet(Point pos, Point dir, Size size) : base(pos, dir, size)
         {
         }
-
         public override void Draw()
         {
-            throw new NotImplementedException();
+            Game.Buffer.Graphics.DrawImage(imageBullet, Pos.X, Pos.Y, Size.Width, Size.Height);
         }
-
         public override void Update()
         {
-            throw new NotImplementedException();
-        }
+            Pos.X += Dir.X;
+        }       
     }
 }

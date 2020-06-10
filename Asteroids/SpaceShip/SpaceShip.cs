@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,21 @@ namespace YarvimyakiIlyaAsteroids
 {
     class SpaceShip : BaseObject
     {
+        //Щиты корябля
+        public const int MAXSIELDS = 10;
+        private int shields = 100;
+        public int Shields { get { return shields; } set { shields = shields - value < 0 ? 0 : shields - value; } }
+        /// <summary>
+        /// делегат для обновления информаци по щитам
+        /// </summary>
+        /// <param name="damage">Полученный урон</param>
+        /// <param name="cuurentValueShilds">Текущая прочность щита</param>
+        public delegate void UpdateInfoShields(int damage, int cuurentValueShilds);
+        public event UpdateInfoShields EventUpdateInfoShields;
+        //Заряды для выстрела
+        public const int MAXCHARGE = 10;
+        private int charge;
+        public int Charge { get { return charge; } set { charge = value; charge = charge > MAXCHARGE ? MAXCHARGE : charge = value; } }
         //модель корябля
         private Image imageSpaceShip = Image.FromFile(@"SpaceShip\Spaceship.png");
         //Скорость корябля
@@ -22,6 +38,10 @@ namespace YarvimyakiIlyaAsteroids
         {
             StartSettings();
         }
+        public void EnergyLow(int n)
+        {
+            shields -= n;
+        }
         //Стартовые настройки корабля
         private void StartSettings()
         {
@@ -29,6 +49,7 @@ namespace YarvimyakiIlyaAsteroids
             Dir = new Point(0, 0);
             Size = new Size(40, 40);
             Speed = 6;
+            Charge = MAXCHARGE;
         }
         /// <summary>
         /// Прорисовка корябля
@@ -45,6 +66,7 @@ namespace YarvimyakiIlyaAsteroids
         {
             Pos.X += Dir.X;
             Pos.Y += Dir.Y;
+            Charge += 1;
         }
         /// <summary>
         /// Используется как обработчик событий нажатия 
@@ -68,7 +90,28 @@ namespace YarvimyakiIlyaAsteroids
             else if (key == Keys.Left|| key == Keys.A)
             {
                 Dir.X = move ? -1 * Speed : 0;
+            }         
+        }
+        public Bullet Volley()
+        {
+            Charge = 0;
+            return new Bullet(Pos, new Point(4, 0), new Size(10, 10));
+        }
+        public bool Collision(ICollision obj)
+        {
+            if (obj is Asteroid)
+            {
+                Asteroid asteroid = obj as Asteroid;
+                if (asteroid.TypeAsteroid == eTypeAsteroid.Asteroid && this.Rect.IntersectsWith(obj.Rect))
+                {
+                    Random random = new Random();
+                    int damage = random.Next(10, 20);
+                    shields -= damage;
+                    EventUpdateInfoShields(damage, shields);
+                    return true;
+                }
             }
+            return false;
         }
     }
 }
