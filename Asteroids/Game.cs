@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace YarvimyakiIlyaAsteroids
 {
@@ -18,6 +16,9 @@ namespace YarvimyakiIlyaAsteroids
         public static List<Bullet> bullets = new List<Bullet>();
         public static Random rand = new Random();
         public static int points = 0;
+        private static MainForm mainForm;
+        private static Stopwatch stopWatch;
+        public static int rewardPoints;
         // Свойства
         // Ширина и высота игрового поля
         public static int Width { get; set; }
@@ -27,11 +28,12 @@ namespace YarvimyakiIlyaAsteroids
         }
         public static void Init(MainForm form)
         {
+            mainForm = form;
             form.KeyDown += ActionSpaceShip;
             form.KeyUp += StopSpaceShip;
             form.SizeChanged += Form_SizeChanged;
             form.MaximizeBox = false;
-            form.MinimizeBox = false;            
+            form.MinimizeBox = false;
             // Графическое устройство для вывода графики            
             Graphics g;
             // Предоставляет доступ к главному буферу графического контекста для текущего приложения
@@ -43,15 +45,17 @@ namespace YarvimyakiIlyaAsteroids
             Height = form.ClientSize.Height;
             // Связываем буфер в памяти с графическим объектом, чтобы рисовать в буфере
             Buffer = _context.Allocate(g, new Rectangle(0, 0, Width, Height));
-            Load(form);
-            Timer timer = new Timer { Interval = 100 };
+            Load();
+            stopWatch = new Stopwatch();
+            stopWatch.Start();
+            Timer timer = new Timer { Interval = 10 };
             timer.Start();
             timer.Tick += Timer_Tick;
-        }        
+        }
         /// <summary>
         /// Создание объектов
         /// </summary>
-        private static void Load(MainForm form)
+        private static void Load()
         {
             asteroids = new Asteroid[10];
             stars = new BaseObject[10];
@@ -60,16 +64,16 @@ namespace YarvimyakiIlyaAsteroids
             {
                 for (int i = 0; i < asteroids.Length; i++)
                 {
-                    asteroids[i] = new Asteroid(new Point(rand.Next(0, 600), rand.Next(0, 600)), new Point(rand.Next(3, 8), 0),
+                    asteroids[i] = new Asteroid(new Point(800, rand.Next(0, 600)), new Point(rand.Next(1, 5), 0),
                         new Size(30, 30), i % 5 == 0 ? eTypeAsteroid.BonusStar : eTypeAsteroid.Asteroid);
-                    asteroids[i].EventUpdateInfoRewardPoints += form.CreateLabelRewardPoints;
+                    asteroids[i].EventUpdateInfoRewardPoints += mainForm.CreateLabelRewardPoints;
                     asteroids[i].EventUpdateInfoRewardPoints += LogGame.WritenInfoRewardPoints;
                 }
             }
             catch (GameObjectException ex)
             {
                 DialogResult dialogResult = MessageBox.Show(ex.Message, "", MessageBoxButtons.OK);
-                asteroids[9] = new Asteroid(new Point(rand.Next(0, 600), rand.Next(0, 600)), new Point(rand.Next(5, 15), 0),
+                asteroids[9] = new Asteroid(new Point(rand.Next(0, 600), rand.Next(0, 600)), new Point(rand.Next(1, 5), 0),
                     new Size(30, 30), eTypeAsteroid.Asteroid);
             }
             //Создание звезд
@@ -79,7 +83,7 @@ namespace YarvimyakiIlyaAsteroids
             }
             //Создание космического корабля и настройка подписок
             spaceShip = new SpaceShip();
-            spaceShip.EventUpdateInfoShields += form.UpdateInfoShields;
+            spaceShip.EventUpdateInfoShields += mainForm.UpdateInfoShields;
             spaceShip.EventUpdateInfoShields += LogGame.WritenInfoShields;
         }
 
@@ -102,31 +106,27 @@ namespace YarvimyakiIlyaAsteroids
             foreach (Asteroid asteroid in asteroids)
             {
                 asteroid.Update();
-                //CollisionWithAsteroid<SpaceShip>(spaceShip, asteroid);
-                if (spaceShip.Collision(asteroid))
-                {
-                    asteroid.TypeAsteroid = eTypeAsteroid.Bang;
-                }
+                CollisionWithAsteroid<SpaceShip>(spaceShip, asteroid);
                 foreach (Bullet bullet in bullets)
                 {
-                    //CollisionWithAsteroid<Bullet>(bullet, asteroid);
-                    if (bullet.Collision(asteroid))
-                    {
-                        asteroid.rewardPoints.lableShow = true;
-                        asteroid.TypeAsteroid = eTypeAsteroid.Bang;                        
-                    }
-                    bullet.Update();
+                    CollisionWithAsteroid<Bullet>(bullet, asteroid);
                 }
             }
+            foreach (Bullet bullet in bullets) bullet.Update();
             foreach (BaseObject star in stars) star.Update();
-            spaceShip.Update();            
-            //void CollisionWithAsteroid<T>(T baseObject, Asteroid asteroid) where T : BaseObject
-            //{
-            //    if (((T)baseObject).Collision(asteroid))
-            //    {
-            //        asteroid.TypeAsteroid = eTypeAsteroid.Bang;
-            //    }
-            //};
+            spaceShip.Update();
+
+            void CollisionWithAsteroid<T>(T baseObject, Asteroid asteroid) where T : BaseObject
+            {
+                if (asteroid.TypeAsteroid != eTypeAsteroid.Bang && baseObject.Collision(asteroid))
+                {
+                    asteroid.Die();
+                    if (baseObject is Bullet)
+                    {
+                        baseObject.Die();
+                    }
+                }
+            };
         }
         /// <summary>
         /// Вывод всех объектов
@@ -197,6 +197,24 @@ namespace YarvimyakiIlyaAsteroids
                     Size size = new Size(800, 600);
                     ((System.Windows.Forms.Form)sender).Size = size;
                 }
+            }
+        }
+        public static void GameOver()
+        {
+            stopWatch.Stop();
+            TimeSpan ts = stopWatch.Elapsed;
+            string gameTime = String.Format("{0:00} ч. {1:00} мин. {2:00} сек.",
+                ts.Hours, ts.Minutes, ts.Seconds);
+            LogGame.DataGameOver($"Время игры - {gameTime}.Ваш результат - {rewardPoints}");
+            DialogResult dialogResult = MessageBox.Show("Ваш корабль потерпел крушение, начать заново?", "", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                Load();
+                Console.Clear();
+            }
+            else
+            {
+                mainForm.Close();
             }
         }
     }

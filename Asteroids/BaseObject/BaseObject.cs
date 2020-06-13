@@ -31,12 +31,13 @@ namespace YarvimyakiIlyaAsteroids
         /// Обновление свойств объектов
         /// </summary>
         public abstract void Update();
+        public abstract void Die();
         /// <summary>
         /// Признак столкновения объектов
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public bool Collision(ICollision obj)
+        public virtual bool Collision(ICollision obj)
         {
             return this.Rect.IntersectsWith(obj.Rect);
         }

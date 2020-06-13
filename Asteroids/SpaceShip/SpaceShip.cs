@@ -14,7 +14,15 @@ namespace YarvimyakiIlyaAsteroids
         //Щиты корябля
         public const int MAXSIELDS = 10;
         private int shields = 100;
-        public int Shields { get { return shields; } set { shields = shields - value < 0 ? 0 : shields - value; } }
+        public int Shields { get { return shields; } set { 
+                shields = value < 0 ? 0 : value;
+                if (value < 0)
+                {
+                    shields = 0;
+                    Die();
+                }
+                shields = value > 100 ? 100 : value;
+            } }
         /// <summary>
         /// делегат для обновления информаци по щитам
         /// </summary>
@@ -23,13 +31,14 @@ namespace YarvimyakiIlyaAsteroids
         public delegate void UpdateInfoShields(int damage, int cuurentValueShilds);
         public event UpdateInfoShields EventUpdateInfoShields;
         //Заряды для выстрела
-        public const int MAXCHARGE = 10;
+        public const int MAXCHARGE = 40;
         private int charge;
         public int Charge { get { return charge; } set { charge = value; charge = charge > MAXCHARGE ? MAXCHARGE : charge = value; } }
         //модель корябля
         private Image imageSpaceShip = Image.FromFile(@"SpaceShip\Spaceship.png");
         //Скорость корябля
-        private int Speed {get;set;}        
+        private int Speed {get;set;}
+        public bool Dead { get; set; } = false;
         public SpaceShip(Point pos, Point dir, Size size) : base(pos, dir, size)
         {
             StartSettings();
@@ -48,7 +57,7 @@ namespace YarvimyakiIlyaAsteroids
             Pos = new Point(0, 300);
             Dir = new Point(0, 0);
             Size = new Size(40, 40);
-            Speed = 6;
+            Speed = 4;
             Charge = MAXCHARGE;
         }
         /// <summary>
@@ -64,9 +73,29 @@ namespace YarvimyakiIlyaAsteroids
         /// </summary>
         public override void Update()
         {
+            if (Dead)
+            {
+                return;
+            }
             Pos.X += Dir.X;
             Pos.Y += Dir.Y;
             Charge += 1;
+            if (Pos.Y > 560)
+            {
+                Pos.Y = 560;
+            }
+            if (Pos.Y < 0)
+            {
+                Pos.Y = 0;
+            }
+            if (Pos.X > 760)
+            {
+                Pos.X = 760;
+            }
+            if (Pos.X < 0)
+            {
+                Pos.X = 0;
+            }
         }
         /// <summary>
         /// Используется как обработчик событий нажатия 
@@ -76,6 +105,10 @@ namespace YarvimyakiIlyaAsteroids
         /// <param name="move">По умолчанию true, если false то сворость движения = 0</param>
         public void MoveStopSpaceShip(Keys key,bool move = true)
         {
+            if (Dead)
+            {
+                return;
+            }
             if (key == Keys.Up || key == Keys.W)
             {
                 Dir.Y = move? -1*Speed : 0;
@@ -94,24 +127,52 @@ namespace YarvimyakiIlyaAsteroids
         }
         public Bullet Volley()
         {
+            if (Dead)
+            {
+                return null;
+            }
             Charge = 0;
-            return new Bullet(Pos, new Point(4, 0), new Size(10, 10));
+            return new Bullet(Pos, new Point(10, 0), new Size(10, 10));
         }
-        public bool Collision(ICollision obj)
+        public override bool Collision(ICollision obj)
         {
+            if (Dead)
+            {
+                return false;
+            }
             if (obj is Asteroid)
             {
                 Asteroid asteroid = obj as Asteroid;
                 if (asteroid.TypeAsteroid == eTypeAsteroid.Asteroid && this.Rect.IntersectsWith(obj.Rect))
                 {
-                    Random random = new Random();
-                    int damage = random.Next(10, 20);
-                    shields -= damage;
-                    EventUpdateInfoShields(damage, shields);
+                    UpdateValueShields(-1);
                     return true;
                 }
+                else if (asteroid.TypeAsteroid == eTypeAsteroid.BonusStar && this.Rect.IntersectsWith(obj.Rect))
+                {
+                    UpdateValueShields(1);
+                    return true;
+                }                
             }
             return false;
+
+            void UpdateValueShields(int value)
+            {
+                Random random = new Random();
+                int damage = random.Next(10, 20);
+                Shields += damage* value;
+                if (!Dead)
+                {
+                    EventUpdateInfoShields(damage, shields);
+                }                
+            }
+        }
+        public override void Die()
+        {
+            Dead = true;
+            Size = new Size(70, 70);
+            imageSpaceShip = Image.FromFile(@"SpaceShip\Bang.png");
+            Game.GameOver();
         }
     }
 }

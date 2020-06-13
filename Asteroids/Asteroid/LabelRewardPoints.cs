@@ -13,17 +13,18 @@ namespace YarvimyakiIlyaAsteroids
     {
         public int rewardPoints;
         public System.Windows.Forms.Label label;
-        public const int TIMELIFE = 40;
+        public const int TIMELIFE = 50;
         public int timeLife;
         public bool lableShow;
 
-        public LabelRewardPoints(Point pos)
+        public LabelRewardPoints()
         {
             this.rewardPoints = new Random().Next(100, 200);
             label = new System.Windows.Forms.Label();
-            label.Location = pos;
             label.BackColor = Color.Black;
             label.ForeColor = Color.White;
+            label.Width = 25;
+            label.Height = 15;
             label.Text = rewardPoints.ToString();
             timeLife = 0;
             lableShow = false;

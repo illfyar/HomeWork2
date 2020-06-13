@@ -35,12 +35,6 @@ namespace YarvimyakiIlyaAsteroids
             }
             set
             {
-                if (!(rewardPoints is null) && rewardPoints.lableShow)
-                {
-                    EventUpdateInfoRewardPoints?.Invoke(rewardPoints);
-                    rewardPoints.lableShow = false;
-                    rewardPoints.timeLife += 1;
-                }
                 if (typeAsteroidDict.TryGetValue(value, out currentImage))
                 {
                     typeAsteroid = value;
@@ -52,14 +46,14 @@ namespace YarvimyakiIlyaAsteroids
             ChekBaseObject();
             TypeAsteroid = typeAsteroid;
             Health = 1;
-            rewardPoints = new LabelRewardPoints(pos);
+            rewardPoints = new LabelRewardPoints();
 
         }
         public Asteroid(Point pos, Point dir, Size size) : base(pos, dir, size)
         {
             TypeAsteroid = eTypeAsteroid.Asteroid;
             Health = 1;
-            rewardPoints = new LabelRewardPoints(pos);
+            rewardPoints = new LabelRewardPoints();
         }
         /// <summary>
         /// Прорисовка астеройда
@@ -67,7 +61,7 @@ namespace YarvimyakiIlyaAsteroids
         public override void Draw()
         {
             Game.Buffer.Graphics.DrawImage(currentImage, Pos.X, Pos.Y, Size.Width, Size.Height);
-            ChekBaseObject();
+            //ChekBaseObject();
         }
         /// <summary>
         /// Изменение свойст астеройда
@@ -81,8 +75,8 @@ namespace YarvimyakiIlyaAsteroids
             if (Pos.X < 0)
             {
                 Pos.X = Game.Width;
-                Pos.Y = Game.rand.Next(0, 600);
-                Dir.X = Game.rand.Next(15, 30);
+                Pos.Y = Game.rand.Next(0, 560);
+                Dir.X = Game.rand.Next(1, 5);
                 if (new Random().Next(1,100) < 5)
                 {
                     TypeAsteroid = eTypeAsteroid.BonusStar;
@@ -102,6 +96,7 @@ namespace YarvimyakiIlyaAsteroids
                 rewardPoints.lableShow = false;
                 rewardPoints.timeLife = 0;
                 EventUpdateInfoRewardPoints(rewardPoints);
+                Game.rewardPoints += rewardPoints.rewardPoints;
             }
         }
         /// <summary>
@@ -124,6 +119,22 @@ namespace YarvimyakiIlyaAsteroids
             if (Health < other.Health)
                 return -1;
             return 0;
+        }
+        public override void Die()
+        {
+            if (TypeAsteroid == eTypeAsteroid.Asteroid)
+            {
+                TypeAsteroid = eTypeAsteroid.Bang;
+            }
+            else if(TypeAsteroid == eTypeAsteroid.BonusStar)
+            {
+                Pos.X = 1100;
+                Pos.Y = new Random().Next(0, 560);
+            }
+            rewardPoints.lableShow = true;
+            rewardPoints.timeLife = 1;
+            EventUpdateInfoRewardPoints(rewardPoints);
+            rewardPoints.label.Location = Pos;
         }
     }
 }

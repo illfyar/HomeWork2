@@ -11,9 +11,9 @@ namespace YarvimyakiIlyaAsteroids
     {
         static void Main(string[] args)
         {
-            MainForm form = new MainForm();            
-            form.Width = 800;
-            form.Height = 600;
+            MainForm form = new MainForm();
+            form.ClientSize = new System.Drawing.Size(800, 600);
+
             Game.Init(form);
             form.Show();
             Game.Draw();

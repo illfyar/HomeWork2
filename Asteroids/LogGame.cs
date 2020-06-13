@@ -18,5 +18,9 @@ namespace YarvimyakiIlyaAsteroids
             if (label.lableShow)
                 Console.WriteLine($"Награда за уничтожение = {label.rewardPoints}");
         }
+        public static void DataGameOver(string str)
+        {
+            Console.WriteLine(str);
+        }
     }
 }
